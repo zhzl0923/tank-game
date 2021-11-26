@@ -1,10 +1,14 @@
 package indi.zzl.trank;
 
+import java.util.Vector;
+
 public class Tank {
-    private int x;
-    private int y;
+    private int x;//坦克x坐标
+    private int y;//坦克y坐标
     private int direct;//坦克方向，0上 1右 2下 3左
     private int speed = 1;
+    private final Vector<Bullet> bullets = new Vector<>();
+
 
     public Tank(int x, int y) {
         this.x = x;
@@ -59,4 +63,35 @@ public class Tank {
     public void setSpeed(int speed) {
         this.speed = speed;
     }
+
+    public void shoot() {
+        int x = 0;
+        int y = 0;
+        switch (getDirect()) {
+            case 0 -> {
+                x = getX() + 17;
+                y = getY() - 6;
+            }
+            case 1 -> {
+                x = getX() + 40;
+                y = getY() + 17;
+            }
+            case 2 -> {
+                x = getX() + 17;
+                y = getY() + 40;
+            }
+            case 3 -> {
+                x = getX() - 6;
+                y = getY() + 17;
+            }
+        }
+        Bullet bullet = new Bullet(x, y, getDirect());
+        this.bullets.add(bullet);
+        new Thread(bullet).start();
+    }
+
+    public Vector<Bullet> getBullets() {
+        return bullets;
+    }
+
 }

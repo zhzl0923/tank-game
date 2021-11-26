@@ -6,10 +6,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Vector;
 
-public class MyPanel extends JPanel implements KeyListener {
+public class MyPanel extends JPanel implements KeyListener, Runnable {
 
     Hero hero;
     Vector<EnemyTank> enemyTanks = new Vector<>();
+
     int enemyTankSize = 3;
 
     public MyPanel() {
@@ -18,6 +19,7 @@ public class MyPanel extends JPanel implements KeyListener {
         for (int i = 0; i < enemyTankSize; i++) {
             EnemyTank enemyTank = new EnemyTank(100 * (i + 1), 0);
             enemyTank.setDirect(2);
+            enemyTank.shoot();
             enemyTanks.add(enemyTank);
         }
     }
@@ -28,8 +30,24 @@ public class MyPanel extends JPanel implements KeyListener {
         super.paint(g);
         g.fillRect(0, 0, 1000, 750);
         drawTank(g, hero.getX(), hero.getY(), hero.getDirect(), 1);
+        Vector<Bullet> heroBullets = hero.getBullets();
+        for (int i = 0; i < heroBullets.size(); i++) {
+            if (heroBullets.get(i).isLive()) {
+                drawBullet(g, heroBullets.get(i).getX(), heroBullets.get(i).getY(), 1);
+            } else {
+                heroBullets.remove(heroBullets.get(i));
+            }
+        }
         for (EnemyTank enemyTank : enemyTanks) {
             drawTank(g, enemyTank.getX(), enemyTank.getY(), enemyTank.getDirect(), 0);
+            Vector<Bullet> enemyTankBullets = enemyTank.getBullets();
+            for (int i = 0; i < enemyTankBullets.size(); i++) {
+                if (enemyTankBullets.get(i).isLive()) {
+                    drawBullet(g, enemyTankBullets.get(i).getX(), enemyTankBullets.get(i).getY(), 0);
+                } else {
+                    enemyTankBullets.remove(enemyTankBullets.get(i));
+                }
+            }
         }
     }
 
@@ -71,6 +89,15 @@ public class MyPanel extends JPanel implements KeyListener {
         }
     }
 
+    public void drawBullet(Graphics g, int x, int y, int type) {
+        switch (type) {
+            case 0 -> g.setColor(Color.cyan);
+            case 1 -> g.setColor(Color.yellow);
+        }
+        g.fill3DRect(x, y, 6, 6, false);
+    }
+
+
     @Override
     public void keyTyped(KeyEvent e) {
 
@@ -90,6 +117,8 @@ public class MyPanel extends JPanel implements KeyListener {
         } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
             hero.setDirect(3);
             hero.moveLeft();
+        } else if (e.getKeyCode() == KeyEvent.VK_A) {
+            hero.shoot();
         }
         this.repaint();
     }
@@ -97,5 +126,17 @@ public class MyPanel extends JPanel implements KeyListener {
     @Override
     public void keyReleased(KeyEvent e) {
 
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            this.repaint();
+        }
     }
 }
