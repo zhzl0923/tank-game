@@ -4,7 +4,7 @@ public class Bullet implements Runnable {
     private int x;//子弹x坐标
     private int y;//子弹y坐标
     private int direct;//子弹方向，0上 1右 2下 3左
-    private int speed = 1;//子弹速度
+    private int speed = 3;//子弹速度
     private boolean isLive = true;
 
     public Bullet(int x, int y, int direct) {
@@ -25,6 +25,9 @@ public class Bullet implements Runnable {
                 Thread.sleep(20);
             } catch (InterruptedException e) {
                 e.printStackTrace();
+            }
+            if (MyPanel.isGameOver) {
+                break;
             }
         }
     }
@@ -82,28 +85,5 @@ public class Bullet implements Runnable {
 
     public void setLive(boolean live) {
         isLive = live;
-    }
-
-    public void shoot() {
-        int x = 0;
-        int y = 0;
-        switch (this.getDirect()) {
-            case 0 -> {
-                x = this.getX() + 17;
-                y = this.getY();
-            }
-            case 1 -> {
-                x = this.getX() + 43;
-                y = this.getY() + 17;
-            }
-            case 2 -> {
-                x = this.getX() + 17;
-                y = this.getY() + 43;
-            }
-            case 3 -> {
-                x = this.getX() + 17;
-                y = this.getY() + 17;
-            }
-        }
     }
 }

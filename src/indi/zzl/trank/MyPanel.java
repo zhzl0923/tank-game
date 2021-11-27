@@ -1,27 +1,42 @@
 package indi.zzl.trank;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.IOException;
+import java.util.Objects;
+import java.util.Random;
 import java.util.Vector;
 
 public class MyPanel extends JPanel implements KeyListener, Runnable {
-
+    public static boolean isGameOver = false;
     Hero hero;
     Vector<EnemyTank> enemyTanks = new Vector<>();
+    Vector<Bomb> bombs = new Vector<>();
+    Image image1;
+    Image image2;
+    Image image3;
 
     int enemyTankSize = 3;
 
-    public MyPanel() {
-        hero = new Hero(100, 100);
+    public MyPanel() throws IOException {
+        Random random = new Random();
+        int x = random.nextInt(960);
+        int y = random.nextInt(710);
+        hero = new Hero(x, y);
         hero.setSpeed(5);
         for (int i = 0; i < enemyTankSize; i++) {
             EnemyTank enemyTank = new EnemyTank(100 * (i + 1), 0);
             enemyTank.setDirect(2);
-            enemyTank.shoot();
+            enemyTank.shot();
             enemyTanks.add(enemyTank);
+            new Thread(enemyTank).start();
         }
+        image1 = ImageIO.read(Objects.requireNonNull(MyPanel.class.getResource("/boom1.png")));
+        image2 = ImageIO.read(Objects.requireNonNull(MyPanel.class.getResource("/boom2.png")));
+        image3 = ImageIO.read(Objects.requireNonNull(MyPanel.class.getResource("/boom3.png")));
     }
 
 
@@ -29,24 +44,57 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
     public void paint(Graphics g) {
         super.paint(g);
         g.fillRect(0, 0, 1000, 750);
-        drawTank(g, hero.getX(), hero.getY(), hero.getDirect(), 1);
+        if (hero.isLive()) {
+            drawTank(g, hero.getX(), hero.getY(), hero.getDirect(), 1);
+        }
         Vector<Bullet> heroBullets = hero.getBullets();
         for (int i = 0; i < heroBullets.size(); i++) {
-            if (heroBullets.get(i).isLive()) {
-                drawBullet(g, heroBullets.get(i).getX(), heroBullets.get(i).getY(), 1);
+            Bullet bullet = heroBullets.get(i);
+            if (bullet.isLive()) {
+                drawBullet(g, bullet.getX(), bullet.getY(), 1);
             } else {
-                heroBullets.remove(heroBullets.get(i));
+                heroBullets.remove(bullet);
             }
         }
-        for (EnemyTank enemyTank : enemyTanks) {
-            drawTank(g, enemyTank.getX(), enemyTank.getY(), enemyTank.getDirect(), 0);
+        for (int i = 0; i < enemyTanks.size(); i++) {
+            EnemyTank enemyTank = enemyTanks.get(i);
+            if (enemyTank.isLive()) {
+                drawTank(g, enemyTank.getX(), enemyTank.getY(), enemyTank.getDirect(), 0);
+            }
             Vector<Bullet> enemyTankBullets = enemyTank.getBullets();
-            for (int i = 0; i < enemyTankBullets.size(); i++) {
-                if (enemyTankBullets.get(i).isLive()) {
-                    drawBullet(g, enemyTankBullets.get(i).getX(), enemyTankBullets.get(i).getY(), 0);
+            for (int j = 0; j < enemyTankBullets.size(); j++) {
+                if (enemyTankBullets.get(j).isLive()) {
+                    drawBullet(g, enemyTankBullets.get(j).getX(), enemyTankBullets.get(j).getY(), 0);
                 } else {
-                    enemyTankBullets.remove(enemyTankBullets.get(i));
+                    enemyTankBullets.remove(enemyTankBullets.get(j));
                 }
+            }
+            if (!enemyTank.isLive() && enemyTank.getBullets().size() == 0) {
+                enemyTanks.remove(enemyTank);
+            }
+        }
+
+        for (int i = 0; i < bombs.size(); i++) {
+            Bomb bomb = bombs.get(i);
+            if (bomb.getLife() > 6) {
+                g.drawImage(image3, bomb.getX(), bomb.getY(), 40, 40, this);
+            } else if (bomb.getLife() > 3) {
+                g.drawImage(image2, bomb.getX(), bomb.getY(), 40, 40, this);
+            } else {
+                g.drawImage(image1, bomb.getX(), bomb.getY(), 40, 40, this);
+                if (!hero.isLive()){
+                    isGameOver = true;
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    System.exit(0);
+                }
+            }
+            bomb.lifeDown();
+            if (bomb.getLife() == 0) {
+                bombs.remove(bomb);
             }
         }
     }
@@ -105,22 +153,24 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_UP) {
-            hero.setDirect(0);
-            hero.moveUp();
-        } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            hero.setDirect(1);
-            hero.moveRight();
-        } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-            hero.setDirect(2);
-            hero.moveDown();
-        } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            hero.setDirect(3);
-            hero.moveLeft();
-        } else if (e.getKeyCode() == KeyEvent.VK_A) {
-            hero.shoot();
+        if (hero.isLive()){
+            if (e.getKeyCode() == KeyEvent.VK_UP) {
+                hero.setDirect(0);
+                hero.moveUp();
+            } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+                hero.setDirect(1);
+                hero.moveRight();
+            } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                hero.setDirect(2);
+                hero.moveDown();
+            } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+                hero.setDirect(3);
+                hero.moveLeft();
+            } else if (e.getKeyCode() == KeyEvent.VK_A) {
+                hero.shot();
+            }
+            this.repaint();
         }
-        this.repaint();
     }
 
     @Override
@@ -136,7 +186,48 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            hitEnemyTank();
+            hitHeroTank();
             this.repaint();
+            if (isGameOver) {
+                break;
+            }
+        }
+    }
+
+    public void hitTank(Bullet bullet, Tank tank) {
+        if (bullet.getX() >= tank.getX() && bullet.getX() <= tank.getX() + 40
+                && bullet.getY() >= tank.getY() && bullet.getY() <= tank.getY() + 40) {
+            Bomb bomb = new Bomb(tank.getX(), tank.getY());
+            bombs.add(bomb);
+            bullet.setLive(false);
+            tank.setLive(false);
+        }
+    }
+
+    public void hitEnemyTank() {
+        Vector<Bullet> heroBullets = hero.getBullets();
+        for (int i = 0; i < heroBullets.size(); i++) {
+            Bullet bullet = heroBullets.get(i);
+            if (bullet != null && bullet.isLive()) {
+                for (int j = 0; j < enemyTanks.size(); j++) {
+                    EnemyTank enemyTank = enemyTanks.get(j);
+                    if (enemyTank.isLive()) {
+                        hitTank(bullet, enemyTank);
+                    }
+                }
+            }
+        }
+    }
+
+
+    public void hitHeroTank() {
+        for (int i = 0; i < enemyTanks.size(); i++) {
+            EnemyTank enemyTank = enemyTanks.get(i);
+            for (int j = 0; j < enemyTank.getBullets().size(); j++) {
+                Bullet bullet = enemyTank.getBullets().get(j);
+                hitTank(bullet, hero);
+            }
         }
     }
 }

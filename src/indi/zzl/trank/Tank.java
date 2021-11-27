@@ -7,6 +7,7 @@ public class Tank {
     private int y;//坦克y坐标
     private int direct;//坦克方向，0上 1右 2下 3左
     private int speed = 1;
+    private boolean isLive = true;
     private final Vector<Bullet> bullets = new Vector<>();
 
 
@@ -16,19 +17,28 @@ public class Tank {
     }
 
     public void moveUp() {
-        y -= speed;
+        if (y - speed >= 0) {
+            y -= speed;
+        }
     }
 
     public void moveRight() {
-        x += speed;
+        if (x + 40 + speed <= 1000) {
+            x += speed;
+        }
+
     }
 
     public void moveDown() {
-        y += speed;
+        if (y + 40 + speed <= 750) {
+            y += speed;
+        }
     }
 
     public void moveLeft() {
-        x -= speed;
+        if (x - speed >= 0) {
+            x -= speed;
+        }
     }
 
 
@@ -64,7 +74,7 @@ public class Tank {
         this.speed = speed;
     }
 
-    public void shoot() {
+    public void shot() {
         int x = 0;
         int y = 0;
         switch (getDirect()) {
@@ -92,6 +102,14 @@ public class Tank {
 
     public Vector<Bullet> getBullets() {
         return bullets;
+    }
+
+    public boolean isLive() {
+        return isLive;
+    }
+
+    public void setLive(boolean live) {
+        isLive = live;
     }
 
 }
