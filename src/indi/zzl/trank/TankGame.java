@@ -2,6 +2,8 @@ package indi.zzl.trank;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 
 public class TankGame extends JFrame {
@@ -14,12 +16,20 @@ public class TankGame extends JFrame {
 
     public TankGame() throws IOException {
         mp = new MyPanel();
-        this.setSize(1000 + 8 + 8, 750 + 31 + 8);
         this.add(mp);
         this.addKeyListener(mp);
+        this.setSize(1400, 750 + 31 + 8);
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                Recorder.storeRecord();
+            }
+        });
+        int response = JOptionPane.showConfirmDialog(null, "是否继续上局游戏", "", JOptionPane.YES_NO_OPTION);
+        MyPanel.isKeepOn = (response == 0);
         new Thread(mp).start();
     }
 }

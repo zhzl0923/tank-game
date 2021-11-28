@@ -12,6 +12,7 @@ import java.util.Vector;
 
 public class MyPanel extends JPanel implements KeyListener, Runnable {
     public static boolean isGameOver = false;
+    public static boolean isKeepOn = false;
     Hero hero;
     Vector<EnemyTank> enemyTanks = new Vector<>();
     Vector<Bomb> bombs = new Vector<>();
@@ -19,24 +20,32 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
     Image image2;
     Image image3;
 
-    int enemyTankSize = 10;
+    int enemyTankSize = 7;
 
     public MyPanel() throws IOException {
-        Random random = new Random();
-        int x = random.nextInt(960);
-        int y = random.nextInt(710);
-        hero = new Hero(x, y);
-        hero.setSpeed(5);
-        for (int i = 0; i < enemyTankSize; i++) {
-            EnemyTank enemyTank = new EnemyTank(100 * (i + 1), 0);
-            enemyTank.setDirect(2);
-            enemyTank.shot();
-            enemyTanks.add(enemyTank);
-            enemyTank.setHero(hero);
-            enemyTank.setEnemyTanks(enemyTanks);
-            new Thread(enemyTank).start();
+        Recorder.readRecord();
+        if (isKeepOn) {
+            hero = Recorder.getHero();
+            enemyTanks = Recorder.getEnemyTanks();
+        } else {
+            Random random = new Random();
+            int x = random.nextInt(960);
+            int y = random.nextInt(710);
+            hero = new Hero(x, y);
+            hero.setSpeed(5);
+            for (int i = 0; i < enemyTankSize; i++) {
+                EnemyTank enemyTank = new EnemyTank(100 * (i + 1), 0);
+                enemyTank.setDirect(2);
+                enemyTank.shot();
+                enemyTanks.add(enemyTank);
+                enemyTank.setHero(hero);
+                enemyTank.setEnemyTanks(enemyTanks);
+                new Thread(enemyTank).start();
+            }
         }
         hero.setEnemyTanks(enemyTanks);
+        Recorder.setHero(hero);
+        Recorder.setEnemyTanks(enemyTanks);
         image1 = ImageIO.read(Objects.requireNonNull(MyPanel.class.getResource("/boom1.png")));
         image2 = ImageIO.read(Objects.requireNonNull(MyPanel.class.getResource("/boom2.png")));
         image3 = ImageIO.read(Objects.requireNonNull(MyPanel.class.getResource("/boom3.png")));
@@ -47,6 +56,7 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
     public void paint(Graphics g) {
         super.paint(g);
         g.fillRect(0, 0, 1000, 750);
+        showInfo(g);
         if (hero.isLive()) {
             drawTank(g, hero.getX(), hero.getY(), hero.getDirect(), 1);
         }
@@ -100,6 +110,15 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
                 bombs.remove(bomb);
             }
         }
+    }
+
+    public void showInfo(Graphics g) {
+        g.setColor(Color.black);
+        Font font = new Font("宋体", Font.BOLD, 25);
+        g.setFont(font);
+        g.drawString("您累计击毁敌方坦克", 1020, 30);
+        g.drawString(Recorder.getAllEnemyThankNum() + "", 1080, 100);
+        drawTank(g, 1020, 60, 0, 0);
     }
 
     public void drawTank(Graphics g, int x, int y, int direct, int type) {
@@ -207,14 +226,16 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
         }
     }
 
-    public void hitTank(Bullet bullet, Tank tank) {
+    public boolean hitTank(Bullet bullet, Tank tank) {
         if (bullet.getX() >= tank.getX() && bullet.getX() <= tank.getX() + 40
                 && bullet.getY() >= tank.getY() && bullet.getY() <= tank.getY() + 40) {
             Bomb bomb = new Bomb(tank.getX(), tank.getY());
             bombs.add(bomb);
             bullet.setLive(false);
             tank.setLive(false);
+            return true;
         }
+        return false;
     }
 
     public void hitEnemyTank() {
@@ -225,7 +246,9 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
                 for (int j = 0; j < enemyTanks.size(); j++) {
                     EnemyTank enemyTank = enemyTanks.get(j);
                     if (enemyTank.isLive()) {
-                        hitTank(bullet, enemyTank);
+                        if (hitTank(bullet, enemyTank)) {
+                            Recorder.addAlEnemyThankNum();
+                        }
                     }
                 }
             }

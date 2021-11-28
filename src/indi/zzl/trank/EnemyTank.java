@@ -1,8 +1,9 @@
 package indi.zzl.trank;
 
+import java.io.Serializable;
 import java.util.Vector;
 
-public class EnemyTank extends Tank implements Runnable {
+public class EnemyTank extends Tank implements Runnable, Serializable {
 
     private Hero hero;
 
@@ -10,11 +11,16 @@ public class EnemyTank extends Tank implements Runnable {
         super(x, y);
     }
 
+    public EnemyTank(int x, int y, int direct) {
+        this(x, y);
+        this.setDirect(direct);
+    }
+
     @Override
     public void run() {
         while (true) {
             if (getBullets() == null || getBullets().size() == 0) {
-//                shot();
+                shot();
             }
             switch (getDirect()) {
                 case 0 -> {

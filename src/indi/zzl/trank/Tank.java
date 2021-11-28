@@ -11,6 +11,8 @@ public class Tank {
     private final Vector<Bullet> bullets = new Vector<>();
     private Vector<EnemyTank> enemyTanks = new Vector<>();
 
+    public Tank() {
+    }
 
     public Tank(int x, int y) {
         this.x = x;
@@ -157,4 +159,14 @@ public class Tank {
         return false;
     }
 
+    @Override
+    public String toString() {
+        return "Tank{" +
+                "x=" + x +
+                ", y=" + y +
+                ", direct=" + direct +
+                ", speed=" + speed +
+                ", isLive=" + isLive +
+                '}';
+    }
 }
