@@ -9,6 +9,7 @@ public class Tank {
     private int speed = 1;
     private boolean isLive = true;
     private final Vector<Bullet> bullets = new Vector<>();
+    private Vector<EnemyTank> enemyTanks = new Vector<>();
 
 
     public Tank(int x, int y) {
@@ -110,6 +111,50 @@ public class Tank {
 
     public void setLive(boolean live) {
         isLive = live;
+    }
+
+    public void setEnemyTanks(Vector<EnemyTank> enemyTanks) {
+        this.enemyTanks = enemyTanks;
+    }
+
+    public boolean isTouchEnemyTank() {
+        for (int i = 0; i < enemyTanks.size(); i++) {
+            EnemyTank enemyTank = enemyTanks.get(i);
+            if (enemyTank == this) {
+                continue;
+            }
+            if (isTouchObstacle(enemyTank.getX(), enemyTank.getY(), 40, 40)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isTouchObstacle(int x, int y, int width, int height) {
+        int tankX = getX(), tankY = getY();
+        switch (getDirect()) {
+            case 0 -> tankY -= speed;
+            case 1 -> tankX += speed;
+            case 2 -> tankY += speed;
+            case 3 -> tankX -= speed;
+        }
+        if (tankX >= x && tankX <= x + width
+                && tankY >= y && tankY <= y + height) {
+            return true;
+        }
+        if (tankX + 40 >= x && tankX + 40 <= x + width
+                && tankY >= y && tankY <= y + height) {
+            return true;
+        }
+        if (tankX + 40 >= x && tankX + 40 <= x + width
+                && tankY + 40 >= y && tankY + 40 <= y + height) {
+            return true;
+        }
+        if (tankX >= x && tankX <= x + width
+                && tankY + 40 >= y && tankY + 40 <= y + height) {
+            return true;
+        }
+        return false;
     }
 
 }

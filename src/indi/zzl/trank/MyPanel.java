@@ -19,7 +19,7 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
     Image image2;
     Image image3;
 
-    int enemyTankSize = 3;
+    int enemyTankSize = 10;
 
     public MyPanel() throws IOException {
         Random random = new Random();
@@ -32,8 +32,11 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
             enemyTank.setDirect(2);
             enemyTank.shot();
             enemyTanks.add(enemyTank);
+            enemyTank.setHero(hero);
+            enemyTank.setEnemyTanks(enemyTanks);
             new Thread(enemyTank).start();
         }
+        hero.setEnemyTanks(enemyTanks);
         image1 = ImageIO.read(Objects.requireNonNull(MyPanel.class.getResource("/boom1.png")));
         image2 = ImageIO.read(Objects.requireNonNull(MyPanel.class.getResource("/boom2.png")));
         image3 = ImageIO.read(Objects.requireNonNull(MyPanel.class.getResource("/boom3.png")));
@@ -82,7 +85,7 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
                 g.drawImage(image2, bomb.getX(), bomb.getY(), 40, 40, this);
             } else {
                 g.drawImage(image1, bomb.getX(), bomb.getY(), 40, 40, this);
-                if (!hero.isLive()){
+                if (!hero.isLive()) {
                     isGameOver = true;
                     try {
                         Thread.sleep(100);
@@ -153,19 +156,28 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (hero.isLive()){
+        if (hero.isLive()) {
             if (e.getKeyCode() == KeyEvent.VK_UP) {
                 hero.setDirect(0);
-                hero.moveUp();
+                if (!hero.isTouchEnemyTank()) {
+                    hero.moveUp();
+                }
+
             } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
                 hero.setDirect(1);
-                hero.moveRight();
+                if (!hero.isTouchEnemyTank()) {
+                    hero.moveRight();
+                }
             } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
                 hero.setDirect(2);
-                hero.moveDown();
+                if (!hero.isTouchEnemyTank()) {
+                    hero.moveDown();
+                }
             } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
                 hero.setDirect(3);
-                hero.moveLeft();
+                if (!hero.isTouchEnemyTank()) {
+                    hero.moveLeft();
+                }
             } else if (e.getKeyCode() == KeyEvent.VK_A) {
                 hero.shot();
             }
