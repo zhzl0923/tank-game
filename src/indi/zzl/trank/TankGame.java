@@ -15,7 +15,13 @@ public class TankGame extends JFrame {
     }
 
     public TankGame() throws IOException {
-        mp = new MyPanel();
+        int response = JOptionPane.showConfirmDialog(
+                null,
+                "是否继续上局游戏",
+                "",
+                JOptionPane.YES_NO_OPTION
+        );
+        mp = new MyPanel(response == 0);
         this.add(mp);
         this.addKeyListener(mp);
         this.setSize(1400, 750 + 31 + 8);
@@ -28,8 +34,7 @@ public class TankGame extends JFrame {
                 Recorder.storeRecord();
             }
         });
-        int response = JOptionPane.showConfirmDialog(null, "是否继续上局游戏", "", JOptionPane.YES_NO_OPTION);
-        MyPanel.isKeepOn = (response == 0);
+
         new Thread(mp).start();
     }
 }

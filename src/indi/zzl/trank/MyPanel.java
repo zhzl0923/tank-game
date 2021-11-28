@@ -22,30 +22,34 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
 
     int enemyTankSize = 7;
 
-    public MyPanel() throws IOException {
+    public MyPanel(boolean isKeepOn) throws IOException {
         Recorder.readRecord();
         if (isKeepOn) {
             hero = Recorder.getHero();
             enemyTanks = Recorder.getEnemyTanks();
+            hero.setEnemyTanks(enemyTanks);
         } else {
             Random random = new Random();
             int x = random.nextInt(960);
             int y = random.nextInt(710);
             hero = new Hero(x, y);
             hero.setSpeed(5);
-            for (int i = 0; i < enemyTankSize; i++) {
+            for (int i = 0; i < enemyTanks.size(); i++) {
                 EnemyTank enemyTank = new EnemyTank(100 * (i + 1), 0);
                 enemyTank.setDirect(2);
                 enemyTank.shot();
                 enemyTanks.add(enemyTank);
-                enemyTank.setHero(hero);
-                enemyTank.setEnemyTanks(enemyTanks);
-                new Thread(enemyTank).start();
             }
+            hero.setEnemyTanks(enemyTanks);
+            Recorder.setHero(hero);
+            Recorder.setEnemyTanks(enemyTanks);
         }
-        hero.setEnemyTanks(enemyTanks);
-        Recorder.setHero(hero);
-        Recorder.setEnemyTanks(enemyTanks);
+        for (int i = 0; i < enemyTanks.size(); i++) {
+            EnemyTank enemyTank = enemyTanks.get(i);
+            enemyTank.setHero(hero);
+            enemyTank.setEnemyTanks(enemyTanks);
+            new Thread(enemyTank).start();
+        }
         image1 = ImageIO.read(Objects.requireNonNull(MyPanel.class.getResource("/boom1.png")));
         image2 = ImageIO.read(Objects.requireNonNull(MyPanel.class.getResource("/boom2.png")));
         image3 = ImageIO.read(Objects.requireNonNull(MyPanel.class.getResource("/boom3.png")));
